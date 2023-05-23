@@ -89,23 +89,76 @@ end
 
 
 local announce = function(msg)
-	DEFAULT_CHAT_FRAME:AddMessage(msg)
+	SendChatMessage(msg, "party")
 end
 
-tmpFrame123 = CreateFrame("Frame")
-tmpFrame123:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
+JDSpellAnnounceFrame = CreateFrame("Frame")
+JDSpellAnnounceFrame:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
+JDSpellAnnounceFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+JDSpellAnnounceFrame:RegisterAllEvents()
+JDSpellAnnounceFrame:UnregisterEvent("ACTIONBAR_SLOT_CHANGED")
+JDSpellAnnounceFrame:UnregisterEvent("ACTIONBAR_UPDATE_USABLE")
+JDSpellAnnounceFrame:UnregisterEvent("ADDON_LOADED")
+JDSpellAnnounceFrame:UnregisterEvent("BAG_UPDATE")
+JDSpellAnnounceFrame:UnregisterEvent("CHAT_MSG_ADDON")
+JDSpellAnnounceFrame:UnregisterEvent("CHAT_MSG_CHANNEL")
+JDSpellAnnounceFrame:UnregisterEvent("CHAT_MSG_CHANNEL_JOIN")
+JDSpellAnnounceFrame:UnregisterEvent("CHAT_MSG_CHANNEL_LEAVE")
+JDSpellAnnounceFrame:UnregisterEvent("CHAT_MSG_CHANNEL_NOTICE_USER")
+JDSpellAnnounceFrame:UnregisterEvent("CHAT_MSG_GUILD")
+JDSpellAnnounceFrame:UnregisterEvent("CHAT_MSG_SPELL_PERIODIC")
+JDSpellAnnounceFrame:UnregisterEvent("CHAT_MSG_SYSTEM")
+JDSpellAnnounceFrame:UnregisterEvent("CHAT_MSG_YELL")
+JDSpellAnnounceFrame:UnregisterEvent("GUILD_ROSTER_UPDATE")
+JDSpellAnnounceFrame:UnregisterEvent("MEETINGSTONE_CHANGED")
+JDSpellAnnounceFrame:UnregisterEvent("MINIMAP_UPDATE_ZOOM")
+JDSpellAnnounceFrame:UnregisterEvent("PET_BAR_UPDATE")
+JDSpellAnnounceFrame:UnregisterEvent("PLAYER_AURAS_CHANGED")
+JDSpellAnnounceFrame:UnregisterEvent("PLAYER_ENTERING_WORLD")
+JDSpellAnnounceFrame:UnregisterEvent("PLAYER_LOGIN")
+JDSpellAnnounceFrame:UnregisterEvent("PLAYER_REGEN_DISABLED")
+JDSpellAnnounceFrame:UnregisterEvent("QUEST_LOG_UPDATE")
+JDSpellAnnounceFrame:UnregisterEvent("SKILL_LINES_CHANGED")
+JDSpellAnnounceFrame:UnregisterEvent("SPELL_UPDATE_USABLE")
+JDSpellAnnounceFrame:UnregisterEvent("TABARD_CANSAVE_CHANGED")
+JDSpellAnnounceFrame:UnregisterEvent("UNIT_HEALTH")
+JDSpellAnnounceFrame:UnregisterEvent("UNIT_RAGE")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_BINDINGS")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_BONUS_ACTIONBAR")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_CHAT_COLOR")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_CHAT_WINDOWS")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_EXHAUSTION")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_FACTION")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_INSTANCE_INFO")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_INVENTORY_ALERTS")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_LFG_TYPES")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_MACROS")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_PENDING_MAIL")
+JDSpellAnnounceFrame:UnregisterEvent("UPDATE_TICKET")
+JDSpellAnnounceFrame:UnregisterEvent("VARIABLES_LOADED")
+JDSpellAnnounceFrame:UnregisterEvent("WORLD_MAP_UPDATE")
+JDSpellAnnounceFrame:UnregisterEvent("ZONE_CHANGED_INDOORS")
 -- UNIT_SPELLCAST_SUCCEEDED for challenging shout
 -- CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS Fired when a buff is cast on self (SW, LS)
-tmpFrame123:SetScript("OnEvent", function()
+JDSpellAnnounceFrame:SetScript("OnEvent", function()
+	DEFAULT_CHAT_FRAME:AddMessage(event)
 	if event == "CHAT_MSG_SPELL_SELF_DAMAGE" then
 		if string.find(arg1, "Your Taunt was resisted by (%w+)") then
 			announce("TAUNT RESIST: "..UnitName("target")..UnitLevel("target"))
 		elseif string.find(arg1, "Shield Bash") then
-			if string.find(arg1, "Shield Bash hits") then
-				announce("Kick: "..UnitName("target")..UnitLevel("target"))
+			if string.find(arg1, "Shield Bash hits") or string.find(arg1, "Shield Bash crits") then
+				announce("kicked "..UnitName("target")..UnitLevel("target"))
 			else
-				announce("MISSED Kick: "..UnitName("target")..UnitLevel("target"))
+				announce("MISSED kick on "..UnitName("target")..UnitLevel("target"))
 			end
 		end
+	elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
+		DEFAULT_CHAT_FRAME:AddMessage(spell)
+		DEFAULT_CHAT_FRAME:AddMessage(arg1)
+		DEFAULT_CHAT_FRAME:AddMessage(arg2)
+		DEFAULT_CHAT_FRAME:AddMessage(arg3)
+		DEFAULT_CHAT_FRAME:AddMessage(arg4)
+		DEFAULT_CHAT_FRAME:AddMessage(arg5)
 	end
 end)
