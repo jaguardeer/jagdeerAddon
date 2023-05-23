@@ -1,0 +1,7 @@
+##Interface:11200
+##Title: jagdeerAddon
+##Notes: JaguarDeer's Addon
+##OptionalDeps:
+##Dependencies:
+
+jagdeerAddon.lua
