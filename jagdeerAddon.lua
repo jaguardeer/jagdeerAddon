@@ -39,6 +39,38 @@ CastMouseover = function(spellname)
 	if doMouseover and doRetarget then TargetLastTarget() end
 end
 
+CastMouseover2 = function(spellname)
+	--[harm, nodead, exists]
+	local isGoodUnit = function(unitid)
+		return UnitExists(unitid) and not (UnitIsFriend(unitid, "player") or UnitIsDead(unitid))
+	end
+	--
+	local doMouseover = isGoodUnit("mouseover") and not UnitIsUnit("mouseover", "target")
+	--
+	if doMouseover then TargetUnit("mouseover") end
+	CastSpellByName(spellname)
+end
+
+CastMouseoverFriendly = function(spellname)
+	--[exists, noharm, nodead]
+	local isGoodUnit = function(unitid)
+		return UnitExists(unitid) and UnitIsFriend(unitid, "player") and not UnitIsDead(unitid)
+	end
+	--
+	if isGoodUnit("mouseover") then
+		local doRetarget = not UnitIsUnit("mouseover", "target")
+		TargetUnit("mouseover")
+		CastSpellByName(spellname)
+		if doRetarget then
+			TargetLastTarget()
+		end
+	elseif isGoodUnit("target") then
+		CastSpellByName(spellname)
+	else
+		CastSpellByName(spellname, true)
+	end
+end
+
 StartAttack = function()
 	if not startattack123.attacking then
 		AttackTarget()
@@ -66,27 +98,51 @@ CheckDebuff = function(bufftex)
 	return false
 end
 
-UseBandage = function()
-	local b, i, s, n
-	local onself = IsShiftKeyDown()
-	--DEFAULT_CHAT_FRAME:AddMessage(onself)
-	--if onself and CheckDebuff("INV_Misc_Bandage_08") then return end
-	for _,i in ipairs({14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251}) do
-		for b = 0, 4, 1 do
-			for s = 1,GetContainerNumSlots(b), 1 do
-				n = GetContainerItemLink(b, s)
-				if n and string.find(n, i) then
-					UseContainerItem(b, s, onself)
-				end
+local UseItem = function(itemstr, onself)
+	for b = 0, 4, 1 do
+		for s = 1,GetContainerNumSlots(b), 1 do
+			local n = GetContainerItemLink(b, s)
+			if n and string.find(n, itemstr) then
+				UseContainerItem(b, s, onself)
 			end
 		end
 	end
 end
 
+UseBandage = function()
+	local onself = IsShiftKeyDown()
+	--if onself and CheckDebuff("INV_Misc_Bandage_08") then return end
+	for _,i in ipairs({14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251}) do
+		UseItem(i, onself)
+	end
+end
+
+local CheckBuff = function(bufftex)
+	for i=0,32 do
+		local n = GetPlayerBuffTexture(i)
+		if n and string.find(n, bufftex) then
+			return true
+		end
+	end
+	return false
+end
+
+EatDrinkMageFood = function()
+	local foods = {"Conjured Muffin"}
+	local drinks = {"Conjured Water"}
+	if not CheckBuff("INV_Drink_07") then
+		for _,drink in ipairs(drinks) do
+			UseItem(drink)
+		end
+	elseif not CheckBuff("INV_Misc_Fork&Knife") then
+		for _,food in ipairs(foods) do
+			UseItem(food)
+		end
+	end
+end
 
 
 -- KICK ANNOUNCER
-
 
 local announce = function(msg)
 	SendChatMessage(msg, "party")
@@ -312,6 +368,8 @@ JDSpellAnnounceFrame:UnregisterEvent("ZONE_CHANGED")
 JDSpellAnnounceFrame:UnregisterEvent("ZONE_CHANGED_INDOORS")
 JDSpellAnnounceFrame:UnregisterEvent("ZONE_CHANGED_NEW_AREA")
 JDSpellAnnounceFrame:UnregisterEvent("PLAYER_DAMAGE_DONE_MODS")
+JDSpellAnnounceFrame:UnregisterEvent("UNIT_ENERGY")
+JDSpellAnnounceFrame:UnregisterEvent("UNIT_HAPPINESS")
 -- register actual events
 JDSpellAnnounceFrame:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
 JDSpellAnnounceFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
