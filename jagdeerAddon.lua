@@ -311,6 +311,7 @@ JDSpellAnnounceFrame:UnregisterEvent("WORLD_MAP_UPDATE")
 JDSpellAnnounceFrame:UnregisterEvent("ZONE_CHANGED")
 JDSpellAnnounceFrame:UnregisterEvent("ZONE_CHANGED_INDOORS")
 JDSpellAnnounceFrame:UnregisterEvent("ZONE_CHANGED_NEW_AREA")
+JDSpellAnnounceFrame:UnregisterEvent("PLAYER_DAMAGE_DONE_MODS")
 -- register actual events
 JDSpellAnnounceFrame:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
 JDSpellAnnounceFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
@@ -337,5 +338,16 @@ JDSpellAnnounceFrame:SetScript("OnEvent", function()
 		DEFAULT_CHAT_FRAME:AddMessage(arg5)
 	else
 		DEFAULT_CHAT_FRAME:AddMessage(event)
+	end
+end)
+
+
+-- auto dismount
+local autoDismountFrame = CreateFrame("Frame")
+autoDismountFrame:RegisterEvent("UI_ERROR_MESSAGE")
+autoDismountFrame:SetScript("onEvent", function ()
+	if event == "UI_ERROR_MESSAGE" and arg1 == "You are mounted" then
+		-- dismount (make this more robust)
+		CastSpellByName("Riding Turtle")
 	end
 end)
